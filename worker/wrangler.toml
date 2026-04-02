@@ -17,4 +17,5 @@ binding = "DB"
 database_name = "ccs_temp_email"
 database_id = "0db5f979-1e51-4813-8d4c-6c230bc9ce8a"
 
-assets = { binding = "ASSETS", directory = "./assets" }
+[assets]
+directory = "./assets"
