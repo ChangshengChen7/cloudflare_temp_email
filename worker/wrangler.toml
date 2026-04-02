@@ -1,0 +1,18 @@
+name = "cloudflare_temp_email"
+main = "src/worker.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = [ "nodejs_compat" ]
+keep_vars = true
+
+[vars]
+PREFIX = "tmp"
+DEFAULT_DOMAINS = ["ccs.profilept.fun"]
+DOMAINS = ["ccs.profilept.fun"]
+ENABLE_USER_CREATE_EMAIL = true
+ENABLE_USER_DELETE_EMAIL = true
+ENABLE_AUTO_REPLY = false
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ccs_temp_email"
+database_id = "0db5f979-1e51-4813-8d4c-6c230bc9ce8a"
