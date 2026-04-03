@@ -151,7 +151,7 @@ app.use('/api/*', async (c, next) => {
 		await next();
 		return;
 	}
-	// 注册机兼容端点 /api/latest 不需要认证
+	// 注册机兼容端点 /api/latest 不需要认证，直接放行
 	if (c.req.path.startsWith("/api/latest")) {
 		await next();
 		return;
