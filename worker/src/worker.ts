@@ -151,6 +151,11 @@ app.use('/api/*', async (c, next) => {
 		await next();
 		return;
 	}
+	// 注册机兼容端点 /api/latest 不需要认证
+	if (c.req.path.startsWith("/api/latest")) {
+		await next();
+		return;
+	}
 	if (c.req.path.startsWith("/api/settings")
 		|| c.req.path.startsWith("/api/send_mail")
 	) {
