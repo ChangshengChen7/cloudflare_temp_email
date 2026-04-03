@@ -274,6 +274,22 @@ app.get('/mails/latest', async (c) => {
 	return c.json({ "ok": true, "email": results.results[0] });
 });
 
+// 注册机兼容：/api/latest 也指向同一个处理器
+app.get('/api/latest', async (c) => {
+	const { address, limit } = c.req.query();
+	if (!address) {
+		return c.json({ "ok": false, "error": "No address" }, 400)
+	}
+	const limitNum = Math.min(parseInt(limit) || 10, 100);
+	const results = await c.env.DB.prepare(
+		`SELECT * FROM raw_mails where address = ? ORDER BY id DESC LIMIT ?`
+	).bind(address, limitNum).all();
+	if (!results.results || results.results.length === 0) {
+		return c.json({ "ok": true, "email": null });
+	}
+	return c.json({ "ok": true, "email": results.results[0] });
+});
+
 app.route('/', commonApi)
 app.route('/', openAuthApi)
 app.route('/', mailsApi)
