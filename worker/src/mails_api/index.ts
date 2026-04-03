@@ -35,23 +35,6 @@ api.get('/api/mails', async (c) => {
     );
 })
 
-// 注册机兼容端点：/api/latest?address=xxx
-// 支持简单地址参数访问，不需要 JWT
-api.get('/api/latest', async (c) => {
-    const { address, limit } = c.req.query();
-    if (!address) {
-        return c.json({ "ok": false, "error": "No address" }, 400)
-    }
-    const limitNum = Math.min(parseInt(limit) || 10, 100);
-    const results = await c.env.DB.prepare(
-        `SELECT * FROM raw_mails where address = ? ORDER BY id DESC LIMIT ?`
-    ).bind(address, limitNum).all();
-    if (!results.results || results.results.length === 0) {
-        return c.json({ "ok": true, "email": null });
-    }
-    return c.json({ "ok": true, "email": results.results[0] });
-});
-
 api.get('/api/mail/:mail_id', async (c) => {
     const { address } = c.get("jwtPayload")
     const { mail_id } = c.req.param();
@@ -68,6 +51,7 @@ api.delete('/api/mails/:id', async (c) => {
     }
     const { address } = c.get("jwtPayload")
     const { id } = c.req.param();
+    // TODO: add toLowerCase() to handle old data
     const { success } = await c.env.DB.prepare(
         `DELETE FROM raw_mails WHERE address = ? and id = ? `
     ).bind(address.toLowerCase(), id).run();
@@ -201,7 +185,7 @@ api.delete('/api/clear_inbox', async (c) => {
     }
     const { address } = c.get("jwtPayload")
     const { success } = await c.env.DB.prepare(
-        `DELETE FROM raw_mails WHERE address = ? `
+        `DELETE FROM raw_mails WHERE address = ?`
     ).bind(address).run();
     if (!success) {
         return c.text(msgs.FailedClearInboxMsg, 500)
@@ -218,7 +202,7 @@ api.delete('/api/clear_sent_items', async (c) => {
     }
     const { address } = c.get("jwtPayload")
     const { success } = await c.env.DB.prepare(
-        `DELETE FROM sendbox WHERE address = ? `
+        `DELETE FROM sendbox WHERE address = ?`
     ).bind(address).run();
     if (!success) {
         return c.text(msgs.FailedClearSentItemsMsg, 500)
@@ -230,4 +214,3 @@ api.delete('/api/clear_sent_items', async (c) => {
 
 api.post('/api/address_change_password', address_auth.changePassword)
 api.post('/api/address_login', address_auth.login)
-
