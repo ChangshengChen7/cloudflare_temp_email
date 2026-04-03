@@ -260,18 +260,23 @@ app.use('/admin/*', async (c, next) => {
 
 // 注册机兼容端点 /api/latest 直接在这里处理，绕过中间件
 app.get('/api/latest', async (c) => {
-	const { address, limit } = c.req.query();
-	if (!address) {
-		return c.json({ "ok": false, "error": "No address" }, 400)
+	// 如果有 no_auth 参数则跳过认证
+	if (c.req.query('no_auth') === '1') {
+		const { address, limit } = c.req.query();
+		if (!address) {
+			return c.json({ "ok": false, "error": "No address" }, 400)
+		}
+		const limitNum = Math.min(parseInt(limit) || 10, 100);
+		const results = await c.env.DB.prepare(
+			`SELECT * FROM raw_mails where address = ? ORDER BY id DESC LIMIT ?`
+		).bind(address, limitNum).all();
+		if (!results.results || results.results.length === 0) {
+			return c.json({ "ok": true, "email": null });
+		}
+		return c.json({ "ok": true, "email": results.results[0] });
 	}
-	const limitNum = Math.min(parseInt(limit) || 10, 100);
-	const results = await c.env.DB.prepare(
-		`SELECT * FROM raw_mails where address = ? ORDER BY id DESC LIMIT ?`
-	).bind(address, limitNum).all();
-	if (!results.results || results.results.length === 0) {
-		return c.json({ "ok": true, "email": null });
-	}
-	return c.json({ "ok": true, "email": results.results[0] });
+	// 没有 no_auth 参数则继续走正常 JWT 认证流程
+	await next();
 });
 
 app.route('/', commonApi)
