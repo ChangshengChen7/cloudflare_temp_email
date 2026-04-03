@@ -36,6 +36,7 @@ api.get('/api/mails', async (c) => {
 })
 
 // 注册机兼容端点：/api/latest?address=xxx
+// 支持简单地址参数访问，不需要 JWT
 api.get('/api/latest', async (c) => {
     const { address, limit } = c.req.query();
     if (!address) {
